@@ -85,6 +85,11 @@ const std::string OdomTopicName = "odom";
 const std::string EnableTfPublisher = "tf";
 const std::string ChildFrameId = "child_frame_id";
 const std::string ParentFrameId = "parent_frame_id";
+
+const std::string MarkerSetName = "marker_set";
+const std::string MarkerSetSize = "marker_set_size";
+
+
 }  // namespace keys
 }  // namespace rosparam
 
@@ -241,14 +246,34 @@ void NodeConfiguration::fromRosParam(
                               " for body `" << publisherConfig.rigidBodyId << "`. TF publishing disabled.");
 
             if (!readParentFrameId)
+            {
               ROS_WARN_STREAM("Failed to parse " << rosparam::keys::ParentFrameId <<
                               " for body `" << publisherConfig.rigidBodyId << "`. TF publishing disabled.");
-
+              publisherConfig.parentFrameId = "world";
+            }
             publisherConfig.publishTf = false;
           }
           else
           {
             publisherConfig.publishTf = true;
+          }
+
+          bool readMarkerSetName = impl::check_and_get_param(bodyParameters,
+                                   rosparam::keys::MarkerSetName, publisherConfig.markerSetName);
+
+          bool readMarkerSetSize = impl::check_and_get_param(bodyParameters,
+                                   rosparam::keys::MarkerSetSize, publisherConfig.markerSetSize);
+
+          if(!readMarkerSetName || !readMarkerSetSize)
+          { 
+            ROS_WARN("Failed to parse " << rosparam::keys::MarkerSetName << " or " << rosparam::keys::MarkerSetSize <<
+                              " for body `" << publisherConfig.rigidBodyId << "`. Marker set publishing disabled.");
+
+            publisherConfig.publishMarkerSet = false;
+          }
+          else
+          {
+            publisherConfig.publishMarkerSet = true;
           }
 
           pubConfigs.push_back(publisherConfig);

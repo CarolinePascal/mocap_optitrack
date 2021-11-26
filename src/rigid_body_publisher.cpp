@@ -99,6 +99,26 @@ nav_msgs::Odometry getRosOdom(RigidBody const& body, const Version& coordinatesV
   }
   return OdometryMsg;
 }
+geometry_msgs::PointStamped getRosPoint(Marker const& marker, const Version& coordinatesVersion)
+{
+  geometry_msgs::PointStamped pointStampedMsg;
+  if (coordinatesVersion < Version("2.0") && coordinatesVersion >= Version("1.7"))
+  {
+    // Motive 1.7+ and < Motive 2.0 coordinate system
+    pointStampedMsg.point.x = -marker.x;
+    pointStampedMsg.point.y = marker.z;
+    pointStampedMsg.point.z = marker.y;
+  }
+  else
+  {
+    // y & z axes are swapped in the Optitrack coordinate system
+    // Also compatible with versions > Motive 2.0
+    pointStampedMsg.point.x = marker.x;
+    pointStampedMsg.point.y = -marker.z;
+    pointStampedMsg.point.z = marker.y;
+  }
+  return pointStampedMsg;
+}
 }  // namespace utilities
 
 RigidBodyPublisher::RigidBodyPublisher(ros::NodeHandle &nh,
@@ -114,6 +134,14 @@ RigidBodyPublisher::RigidBodyPublisher(ros::NodeHandle &nh,
 
   if (config.publishOdom)
     odomPublisher = nh.advertise<nav_msgs::Odometry>(config.odomTopicName, 1000);
+
+  if (config.publishMarkerSet)
+  {
+      for(int i = 0; i < config.markerSetSize; i++)
+      {
+        markerSetPublisher.push_back(nh.advertise<geometry_msgs::PointStamped>(config.markerSetName+std::to_string(i+1),1000));
+      }
+  }
 
   // Motive 1.7+ uses a new coordinate system
   // natNetVersion = (natNetVersion >= Version("1.7"));
@@ -191,6 +219,20 @@ void RigidBodyPublisher::publish(ros::Time const& time, RigidBody const& body)
                               time,
                               config.parentFrameId,
                               config.childFrameId));
+  }
+}
+
+void RigidBodyPublisher::publish(ros::Time const& time, MarkerSet const& markerSet)
+{
+  geometry_msgs::PointStamped point;
+  std_msgs::Header::stamp currentTime = time;
+
+  for (int i = 0; i < config.markerSetSize; i++)
+  {
+    point = utilities::getRosPoint(MarkerSet.markers[i], coordinatesVersion);
+    point.header.stamp = currentTime;
+    point.header.frame_id = config.parentFrameId;
+    markerSetPublisher[i].publish(point);
   }
 }
 

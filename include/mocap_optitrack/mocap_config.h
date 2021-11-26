@@ -61,17 +61,23 @@ struct ServerDescription
 struct PublisherConfiguration
 {
   int rigidBodyId;
+
   std::string poseTopicName;
   std::string pose2dTopicName;
   std::string odomTopicName;
   std::string enableTfPublisher;
   std::string childFrameId;
   std::string parentFrameId;
+  std::string markerSetName;
+
+  int markerSetSize;
 
   bool publishPose;
   bool publishPose2d;
   bool publishOdom;
   bool publishTf;
+
+  bool publishMarkerSet;
 };
 
 typedef std::vector<PublisherConfiguration> PublisherConfigurations;

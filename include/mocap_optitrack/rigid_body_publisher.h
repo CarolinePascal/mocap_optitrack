@@ -51,7 +51,8 @@ public:
                      Version const& natNetVersion,
                      PublisherConfiguration const& config);
   ~RigidBodyPublisher();
-  void publish(ros::Time const& time, RigidBody const&);
+  void publish(ros::Time const& time, RigidBody const& body);
+  void publish(ros::Time const& time, MarkerSet const& markerSet);
 
 private:
   PublisherConfiguration config;
@@ -62,6 +63,8 @@ private:
   ros::Publisher posePublisher;
   ros::Publisher pose2dPublisher;
   ros::Publisher odomPublisher;
+
+  std::vector<ros::Publisher> markerSetPublisher;
 };
 
 /// \brief Dispatches RigidBody data to the correct publisher.
@@ -76,6 +79,7 @@ public:
                              Version const& natNetVersion,
                              PublisherConfigurations const& configs);
   void publish(ros::Time const& time, std::vector<RigidBody> const&);
+  void publish(ros::Time const& time, std::vector<ModelFrame> const&);
 };
 
 } // namespace
