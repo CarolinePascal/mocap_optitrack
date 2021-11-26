@@ -124,6 +124,7 @@ public:
           // rigid bodies in the data model
           ros::Time time = ros::Time::now();
           publishDispatcherPtr->publish(time, dataModel.dataFrame.rigidBodies);
+          publishDispatcherPtr->publish(time, dataModel.dataFrame.markerSets);
 
           // Clear out the model to prepare for the next frame of data
           dataModel.clear();

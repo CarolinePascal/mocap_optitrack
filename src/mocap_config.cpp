@@ -261,12 +261,13 @@ void NodeConfiguration::fromRosParam(
           bool readMarkerSetName = impl::check_and_get_param(bodyParameters,
                                    rosparam::keys::MarkerSetName, publisherConfig.markerSetName);
 
+          std::string tmpMarkerSetSize;
           bool readMarkerSetSize = impl::check_and_get_param(bodyParameters,
-                                   rosparam::keys::MarkerSetSize, publisherConfig.markerSetSize);
+                                   rosparam::keys::MarkerSetSize, tmpMarkerSetSize);
 
           if(!readMarkerSetName || !readMarkerSetSize)
           { 
-            ROS_WARN("Failed to parse " << rosparam::keys::MarkerSetName << " or " << rosparam::keys::MarkerSetSize <<
+            ROS_WARN_STREAM("Failed to parse " << rosparam::keys::MarkerSetName << " or " << rosparam::keys::MarkerSetSize <<
                               " for body `" << publisherConfig.rigidBodyId << "`. Marker set publishing disabled.");
 
             publisherConfig.publishMarkerSet = false;
@@ -274,6 +275,7 @@ void NodeConfiguration::fromRosParam(
           else
           {
             publisherConfig.publishMarkerSet = true;
+            publisherConfig.markerSetSize = atoi(tmpMarkerSetSize.c_str());
           }
 
           pubConfigs.push_back(publisherConfig);

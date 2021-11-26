@@ -225,17 +225,16 @@ void RigidBodyPublisher::publish(ros::Time const& time, RigidBody const& body)
 void RigidBodyPublisher::publish(ros::Time const& time, MarkerSet const& markerSet)
 {
   geometry_msgs::PointStamped point;
-  std_msgs::Header::stamp currentTime = time;
+  ros::Time currentTime = time;
 
   for (int i = 0; i < config.markerSetSize; i++)
   {
-    point = utilities::getRosPoint(MarkerSet.markers[i], coordinatesVersion);
+    point = utilities::getRosPoint(markerSet.markers[i], coordinatesVersion);
     point.header.stamp = currentTime;
     point.header.frame_id = config.parentFrameId;
     markerSetPublisher[i].publish(point);
   }
 }
-
 
 RigidBodyPublishDispatcher::RigidBodyPublishDispatcher(
   ros::NodeHandle &nh,
@@ -246,6 +245,10 @@ RigidBodyPublishDispatcher::RigidBodyPublishDispatcher(
   {
     rigidBodyPublisherMap[config.rigidBodyId] =
       RigidBodyPublisherPtr(new RigidBodyPublisher(nh, natNetVersion, config));
+    if (config.publishMarkerSet)
+    {
+      rigidBodyMarkerSetMap[config.markerSetName] = config.rigidBodyId;
+    }
   }
 }
 
@@ -262,6 +265,26 @@ void RigidBodyPublishDispatcher::publish(
       (*iter->second).publish(time, rigidBody);
     }
   }
+}
+
+void RigidBodyPublishDispatcher::publish(
+  ros::Time const& time, 
+  std::vector<MarkerSet> const& markerSets)
+{
+  for (auto const& markerSet : markerSets)
+    {
+      auto const& iterMarkerSet = rigidBodyMarkerSetMap.find(markerSet.name);
+
+      if(iterMarkerSet != rigidBodyMarkerSetMap.end())
+      {
+        auto const& iter = rigidBodyPublisherMap.find(iterMarkerSet->second);
+
+        if (iter != rigidBodyPublisherMap.end())
+        {
+          (*iter->second).publish(time, markerSet);
+        }
+      }
+    }
 }
 
 }  // namespace mocap_optitrack

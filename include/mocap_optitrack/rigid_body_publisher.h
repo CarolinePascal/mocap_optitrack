@@ -51,8 +51,8 @@ public:
                      Version const& natNetVersion,
                      PublisherConfiguration const& config);
   ~RigidBodyPublisher();
-  void publish(ros::Time const& time, RigidBody const& body);
-  void publish(ros::Time const& time, MarkerSet const& markerSet);
+  void publish(ros::Time const& time, RigidBody const&);
+  void publish(ros::Time const& time, MarkerSet const&);
 
 private:
   PublisherConfiguration config;
@@ -74,12 +74,14 @@ class RigidBodyPublishDispatcher
   typedef std::map<int, RigidBodyPublisherPtr> RigidBodyPublisherMap;
   RigidBodyPublisherMap rigidBodyPublisherMap;
 
+  std::map<std::string, int> rigidBodyMarkerSetMap;
+
 public:
   RigidBodyPublishDispatcher(ros::NodeHandle &nh,
                              Version const& natNetVersion,
                              PublisherConfigurations const& configs);
   void publish(ros::Time const& time, std::vector<RigidBody> const&);
-  void publish(ros::Time const& time, std::vector<ModelFrame> const&);
+  void publish(ros::Time const& time, std::vector<MarkerSet> const&);
 };
 
 } // namespace
